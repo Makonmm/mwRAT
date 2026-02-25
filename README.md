@@ -1,4 +1,4 @@
-# Remote control malware project
+# Remote control  project
 
 ### This project is intended for educational purposes.
 ### Features
